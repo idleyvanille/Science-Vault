@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Science Vault</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+      body { background: linear-gradient(180deg,#020111 0%,#001632 60%,#091a2b 100%); }
+    </style>
+  </head>
+  <body class="min-h-screen text-gray-100 font-sans">
+    <div class="absolute inset-0 pointer-events-none" id="stars"></div>
+    <div class="relative z-10 max-w-6xl mx-auto px-6 py-10">
+      <header class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-400 via-pink-500 to-yellow-300 flex items-center justify-center shadow-2xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v6l4 2"/></svg>
+          </div>
+          <div>
+            <h1 id="site-title" class="text-3xl font-extrabold italic tracking-wider">Science Vault</h1>
+            <div id="site-sub" class="text-xs opacity-80">Explore the wonders of science</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <nav id="category-nav" class="hidden md:flex gap-3"></nav>
+          <div id="owner-area">
+            <button id="owner-toggle" class="text-sm bg-white/5 px-3 py-1 rounded-md">Owner login</button>
+            <div id="owner-login" class="mt-2 p-3 bg-white/3 rounded-md backdrop-blur-sm hidden">
+              <input id="owner-pw" placeholder="password" class="px-2 py-1 rounded bg-white/5 text-sm" />
+              <button id="owner-enter" class="ml-2 px-3 py-1 rounded bg-white/10 text-sm">Enter</button>
+              <div class="mt-2 text-xs opacity-80">Owner password is client-side (for convenience).</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main id="main" class="mt-8">
+        <section id="hero" class="rounded-3xl p-8 bg-gradient-to-br from-white/5 to-white/3 border border-white/6 relative overflow-hidden">
+          <div class="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-gradient-to-tr from-indigo-500/30 to-pink-400/20 blur-3xl"></div>
+          <h2 class="text-3xl font-bold">Exploring the universe, one essay at a time</h2>
+          <p class="mt-3 text-sm opacity-80 max-w-2xl">A curated space for accessible science essays. Read publicly — only the owner can add or edit posts.</p>
+        </section>
+
+        <section id="categories" class="mt-10 grid md:grid-cols-3 gap-6"></section>
+
+        <section class="mt-10">
+          <h2 class="text-xl font-semibold">Latest essays</h2>
+          <div id="latest" class="mt-4 grid md:grid-cols-3 gap-6"></div>
+        </section>
+
+        <div id="owner-panel-wrap" class="mt-12 hidden"></div>
+
+        <footer class="mt-16 text-center text-sm opacity-80">© <span id="year"></span> Science Vault</footer>
+      </main>
+    </div>
+
+    <template id="essay-card">
+      <article class="p-4 rounded-lg bg-white/4 border border-white/5">
+        <img class="w-full h-40 object-cover rounded-md mb-3 hidden" />
+        <h3 class="font-semibold title"></h3>
+        <div class="text-xs opacity-80 meta"></div>
+        <p class="mt-2 text-sm line-clamp-3 excerpt"></p>
+        <div class="mt-3"><button class="read-btn text-sm px-3 py-1 rounded bg-white/5">Read</button></div>
+      </article>
+    </template>
+
+    <template id="essay-page">
+      <div class="mt-8 max-w-3xl">
+        <button class="text-sm mb-4 back-btn">← Back</button>
+        <article class="p-6 rounded-2xl bg-gradient-to-br from-white/5 to-white/3 border border-white/6">
+          <img class="w-full h-64 object-cover rounded-md mb-4 hidden" />
+          <h2 class="text-2xl font-semibold title"></h2>
+          <div class="text-xs opacity-80 meta"></div>
+          <div class="mt-4 whitespace-pre-line content text-sm"></div>
+          <div class="mt-6 owner-controls hidden">
+            <button class="edit-btn px-3 py-1 rounded bg-white/6 text-sm">Edit</button>
+            <button class="delete-btn px-3 py-1 rounded bg-red-600/60 text-sm">Delete</button>
+          </div>
+          <hr class="my-6 border-white/6" />
+          <div class="comments-wrap"></div>
+        </article>
+      </div>
+    </template>
+
+    <template id="comments-template">
+      <div>
+        <h4 class="font-semibold">Comments (<span class="count">0</span>)</h4>
+        <div class="mt-3 space-y-3 comments-list"></div>
+        <div class="mt-4 p-3 rounded bg-white/5">
+          <div class="flex gap-2">
+            <input placeholder="Your name (optional)" class="px-2 py-1 rounded bg-white/6 author" />
+          </div>
+          <textarea placeholder="Write a thoughtful comment..." rows="3" class="w-full mt-2 px-2 py-1 rounded bg-white/6 text"></textarea>
+          <div class="mt-2 flex justify-end">
+            <button class="post-btn px-3 py-1 rounded bg-white/6">Post</button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template id="owner-panel-template">
+      <div class="p-6 rounded-2xl bg-white/4 border border-white/6">
+        <h3 class="font-semibold text-lg">Owner panel — Add new essay</h3>
+        <div class="mt-3 grid gap-2">
+          <input class="title-input px-2 py-1 rounded bg-white/6" placeholder="Title" />
+          <select class="category-input px-2 py-1 rounded bg-white/6"></select>
+          <textarea class="content-input px-2 py-1 rounded bg-white/6" rows="6" placeholder="Write your essay here"></textarea>
+          <div class="flex items-center gap-3">
+            <input type="file" accept="image/*" class="image-input" />
+            <img class="h-16 object-cover rounded hidden preview" />
+          </div>
+          <div class="flex justify-end">
+            <button class="post-btn px-3 py-1 rounded bg-white/6">Post essay</button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>

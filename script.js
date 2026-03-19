@@ -1,69 +1,99 @@
-/*
-Static Science Vault script
-Owner password is stored client-side for convenience: Redsaucepasta
-Data saved in localStorage under 'sv_data_v1'
-*/
-const OWNER_PW = "Redsaucepasta";
-const STORAGE_KEY = "sv_data_v1";
-const CATEGORIES = ["Quantum physics","Light","Radiation","Space and existence"];
-document.getElementById('year').textContent = new Date().getFullYear();
+<script>
+const scene = new THREE.Scene();
 
-// stars background
-(function makeStars(){
-  const wrap = document.getElementById('stars');
-  const frag = document.createDocumentFragment();
-  for(let i=0;i<120;i++){
-    const d = document.createElement('div');
-    const top = Math.random()*100; const left = Math.random()*100;
-    const size = Math.random()*1.6+0.3;
-    d.style.position='absolute'; d.style.top=top+'%'; d.style.left=left+'%';
-    d.style.width = size+'px'; d.style.height = size+'px'; d.style.background='white';
-    d.style.opacity = (Math.random()*0.8).toString(); d.style.borderRadius = '20px';
-    d.style.transform='translate(-50%,-50%)';
-    frag.appendChild(d);
-  }
-  wrap.appendChild(frag);
-})();
-
-// state
-function load(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {essays:[]} }catch(e){return {essays:[]}} }
-function save(s){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
-let state = load();
-
-// UI helpers
-const categoryNav = document.getElementById('category-nav');
-CATEGORIES.forEach(c=>{
-  const btn = document.createElement('button');
-  btn.textContent = c; btn.className='text-sm px-3 py-1 rounded-md hover:bg-white/5';
-  btn.onclick = ()=> showCategory(c);
-  categoryNav.appendChild(btn);
+// HIGH QUALITY RENDERER 🔥
+const renderer = new THREE.WebGLRenderer({
+  canvas: document.getElementById("sim"),
+  antialias: true
 });
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize(window.innerWidth, 500);
 
-// owner login toggle
-const ownerToggle = document.getElementById('owner-toggle');
-ownerToggle.addEventListener('click', ()=> ownerLogin.classList.toggle('hidden'));
-const ownerLogin = document.getElementById('owner-login');
-const ownerPanelWrap = document.getElementById('owner-panel-wrap');
-let isOwner = false;
-document.getElementById('owner-enter').addEventListener('click', ()=>{
-  const pw = document.getElementById('owner-pw').value;
-  if(pw===OWNER_PW){ isOwner=true; ownerLogin.classList.add('hidden'); ownerToggle.textContent='Owner mode'; renderOwnerPanel(); alert('Owner mode enabled'); } else { alert('Wrong password'); }
+// CAMERA
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/500, 0.1, 2000);
+camera.position.set(0, 20, 60);
+
+// CONTROLS
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+// LIGHTING 💡
+const light = new THREE.PointLight(0xffffff, 2, 1000);
+scene.add(light);
+scene.add(new THREE.AmbientLight(0x222222));
+
+// STARFIELD 🌌
+const stars = new THREE.BufferGeometry();
+const starVertices = [];
+for(let i=0;i<8000;i++){
+  starVertices.push((Math.random()-0.5)*2000);
+  starVertices.push((Math.random()-0.5)*2000);
+  starVertices.push((Math.random()-0.5)*2000);
+}
+stars.setAttribute('position', new THREE.Float32BufferAttribute(starVertices,3));
+const starMaterial = new THREE.PointsMaterial({color:0xffffff});
+scene.add(new THREE.Points(stars, starMaterial));
+
+// SUN ☀️
+const sun = new THREE.Mesh(
+  new THREE.SphereGeometry(5,64,64),
+  new THREE.MeshBasicMaterial({color:0xffcc00})
+);
+scene.add(sun);
+
+// PLANET CREATOR
+function createPlanet(size,color,dist,speed){
+  const geo = new THREE.SphereGeometry(size,32,32);
+  const mat = new THREE.MeshStandardMaterial({color});
+  const mesh = new THREE.Mesh(geo,mat);
+
+  const pivot = new THREE.Object3D();
+  scene.add(pivot);
+  pivot.add(mesh);
+
+  mesh.position.x = dist;
+
+  return {pivot, speed};
+}
+
+// ALL PLANETS 🪐
+const mercury = createPlanet(0.5,0xaaaaaa,8,0.02);
+const venus   = createPlanet(0.9,0xffcc99,11,0.015);
+const earth   = createPlanet(1,0x3399ff,14,0.01);
+const mars    = createPlanet(0.8,0xff3300,17,0.008);
+const jupiter = createPlanet(2.5,0xffcc99,22,0.006);
+const saturn  = createPlanet(2.2,0xffddaa,28,0.005);
+const uranus  = createPlanet(1.5,0x66ffff,34,0.003);
+const neptune = createPlanet(1.5,0x3366ff,40,0.002);
+
+// SATURN RINGS 💍
+const ringGeo = new THREE.RingGeometry(3,5,64);
+const ringMat = new THREE.MeshBasicMaterial({color:0xcccccc, side:THREE.DoubleSide});
+const ring = new THREE.Mesh(ringGeo, ringMat);
+ring.rotation.x = Math.PI/2;
+saturn.pivot.children[0].add(ring);
+
+// ANIMATION
+function animate(){
+  requestAnimationFrame(animate);
+
+  mercury.pivot.rotation.y += mercury.speed;
+  venus.pivot.rotation.y += venus.speed;
+  earth.pivot.rotation.y += earth.speed;
+  mars.pivot.rotation.y += mars.speed;
+  jupiter.pivot.rotation.y += jupiter.speed;
+  saturn.pivot.rotation.y += saturn.speed;
+  uranus.pivot.rotation.y += uranus.speed;
+  neptune.pivot.rotation.y += neptune.speed;
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
+
+// RESIZE FIX
+window.addEventListener("resize", ()=>{
+  renderer.setSize(window.innerWidth, 500);
+  camera.aspect = window.innerWidth/500;
+  camera.updateProjectionMatrix();
 });
-
-// render categories and latest
-function render(){
-  renderCategories();
-  renderLatest();
-}
-function renderCategories(){
-  const wrap = document.getElementById('categories'); wrap.innerHTML='';
-  CATEGORIES.forEach(c=>{
-    const card = document.createElement('div');
-    card.className='p-5 rounded-2xl bg-white/3 backdrop-blur-sm border border-white/5';
-    card.innerHTML = `<h3 class="font-semibold text-lg">${c}</h3><p class="mt-2 text-sm opacity-80">Click to explore essays in this topic.</p><div class="mt-4 flex gap-2"><button class="text-sm px-3 py-1 rounded-md bg-white/5">Open</button></div>`;
-    card.querySelector('button').onclick = ()=> showCategory(c);
-    wrap.appendChild(card);
-  });
-}
-def renderLatest():
-  pass
+</script>

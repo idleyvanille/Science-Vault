@@ -27,6 +27,85 @@ function toggleMusic() {
   }
 }
 
+
+// DOUBLE SLIT SIMULATION (FULL INTERACTIVE)
+const slitCanvas = document.getElementById("slitCanvas");
+const ctx = slitCanvas.getContext("2d");
+
+let particles = [];
+let mode = "particle";
+let wavelength = 0.05;
+let slitGap = 60;
+
+// UI CONTROLS
+const controlsDiv = document.createElement("div");
+controlsDiv.style = "color:cyan;padding:10px;";
+controlsDiv.innerHTML = `
+<button onclick="toggleMode()">Toggle Wave/Particle</button>
+<br><br>
+<label>Wavelength</label>
+<input type="range" min="0.01" max="0.1" step="0.005" value="0.05" oninput="updateWave(this.value)">
+<br><br>
+<label>Slit Distance</label>
+<input type="range" min="30" max="100" value="60" oninput="updateSlit(this.value)">
+<p id="explain">Particle mode: electrons behave like particles.</p>
+`;
+slitCanvas.parentElement.appendChild(controlsDiv);
+
+function toggleMode(){
+  mode = mode === "particle" ? "wave" : "particle";
+  document.getElementById("explain").innerText =
+    mode === "particle"
+    ? "Particle mode: particles hit screen individually 🎯"
+    : "Wave mode: interference pattern forms 🌊";
+}
+
+function updateWave(val){ wavelength = parseFloat(val); }
+function updateSlit(val){ slitGap = parseInt(val); }
+
+function createParticle() {
+  return {
+    x: 110,
+    y: Math.random() > 0.5 ? 100 - slitGap/2 : 100 + slitGap/2,
+    speedX: 2 + Math.random(),
+    spread: (Math.random() - 0.5) * 2
+  };
+}
+
+function drawSlits() {
+  ctx.fillStyle = "white";
+  ctx.fillRect(100,100 - slitGap/2 - 20,10,40);
+  ctx.fillRect(100,100 + slitGap/2 - 20,10,40);
+}
+
+function animateSlit(){
+  ctx.clearRect(0,0,800,200);
+  drawSlits();
+
+  if(mode === "particle"){
+    if(Math.random() < 0.3) particles.push(createParticle());
+
+    particles.forEach(p => {
+      p.x += p.speedX;
+      p.y += p.spread;
+      ctx.fillStyle = "cyan";
+      ctx.fillRect(p.x, p.y, 2, 2);
+    });
+
+  } else {
+    for(let x=200; x<800; x++){
+      let intensity = Math.sin(x * wavelength);
+      let brightness = Math.abs(intensity) * 255;
+      ctx.fillStyle = `rgb(${brightness},${brightness},${brightness})`;
+      ctx.fillRect(x, 0, 1, 200);
+    }
+  }
+
+  requestAnimationFrame(animateSlit);
+}
+
+animateSlit();
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
 
@@ -102,6 +181,10 @@ img {
 
 <body>
 
+<!-- STICKERS -->
+<img src="/mnt/data/image.png" style="position:fixed; top:10px; left:10px; width:120px; opacity:0.8; z-index:0;">
+<img src="/mnt/data/image.png" style="position:fixed; bottom:10px; right:10px; width:120px; opacity:0.8; transform:rotate(180deg); z-index:0;">
+
 <!-- AUDIO CONTROL -->
 <div style="position:fixed; top:10px; right:10px; z-index:999;">
   <button onclick="toggleMusic()" style="background:black;color:cyan;border:1px solid cyan;padding:8px;border-radius:6px;">
@@ -129,6 +212,11 @@ img {
 </div>
 
 <div class="panel">
+  <h2>⚛️ Double Slit Experiment (Quantum Physics)</h2>
+  <canvas id="slitCanvas" width="800" height="200" style="background:black;"></canvas>
+</div>
+
+<div class="panel">
   <h2>📚 Essays</h2>
   <div id="posts"></div>
 </div>
@@ -151,7 +239,7 @@ img {
 <div id="about" class="page">
   <h2>🌌 About Me</h2>
   <p>
-   HI! I’m Nikisha Pai, passionate about science, technology, and creativity. I enjoy exploring space, building simulations, and turning ideas into interactive experiences.
+    I’m passionate about science, technology, and creativity. I enjoy exploring space, building simulations, and turning ideas into interactive experiences.
   </p>
   <p>
     <b>Science Vault</b> is where I share astronomy, physics, and coding projects.
@@ -299,14 +387,7 @@ const ring = new THREE.Mesh(ringGeo, ringMat);
 ring.rotation.x = Math.PI/2;
 saturn.pivot.children[0].add(ring);
 
-// GLOW EFFECT ✨
-function addGlow(mesh, color) {
-  const glowGeo = new THREE.SphereGeometry(mesh.geometry.parameters.radius * 1.4, 32, 32);
-  const glowMat = new THREE.MeshBasicMaterial({
-    color: color,
-    transparent: true,
-    opacity: 0.2
-  });
+// (Glow effect removed as requested)
   const glow = new THREE.Mesh(glowGeo, glowMat);
   mesh.add(glow);
 }

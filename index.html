@@ -12,7 +12,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 
 <!-- THREE JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+// BACKGROUND MUSIC
+const music = document.getElementById("bgMusic");
+let isPlaying = false;
+
+function toggleMusic() {
+  if (!isPlaying) {
+    music.play();
+    isPlaying = true;
+  } else {
+    music.pause();
+    isPlaying = false;
+  }
+}
+
+</script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
 
 <style>
@@ -87,6 +102,18 @@ img {
 
 <body>
 
+<!-- AUDIO CONTROL -->
+<div style="position:fixed; top:10px; right:10px; z-index:999;">
+  <button onclick="toggleMusic()" style="background:black;color:cyan;border:1px solid cyan;padding:8px;border-radius:6px;">
+    🔊 Toggle Music
+  </button>
+</div>
+
+<audio id="bgMusic" loop>
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6d4c3f3e7f.mp3?filename=space-ambient-11041.mp3" type="audio/mpeg">
+</audio>
+
+
 <h1 style="text-align:center;">🌌 Science Vault</h1>
 
 <nav>
@@ -124,7 +151,7 @@ img {
 <div id="about" class="page">
   <h2>🌌 About Me</h2>
   <p>
-    I’m passionate about science, technology, and creativity. I enjoy exploring space, building simulations, and turning ideas into interactive experiences.
+   HI! I’m Nikisha Pai, passionate about science, technology, and creativity. I enjoy exploring space, building simulations, and turning ideas into interactive experiences.
   </p>
   <p>
     <b>Science Vault</b> is where I share astronomy, physics, and coding projects.
@@ -193,9 +220,10 @@ function addPost() {
   }
 }
 
-// THREE JS
+// THREE JS SETUP
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("sim"), antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, 500);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/500, 0.1, 2000);
@@ -207,6 +235,19 @@ const light = new THREE.PointLight(0xffffff, 2, 1000);
 scene.add(light);
 scene.add(new THREE.AmbientLight(0x222222));
 
+// STARFIELD
+const stars = new THREE.BufferGeometry();
+const starVertices = [];
+for(let i=0;i<8000;i++){
+  starVertices.push((Math.random()-0.5)*2000);
+  starVertices.push((Math.random()-0.5)*2000);
+  starVertices.push((Math.random()-0.5)*2000);
+}
+stars.setAttribute('position', new THREE.Float32BufferAttribute(starVertices,3));
+const starMaterial = new THREE.PointsMaterial({color:0xffffff});
+scene.add(new THREE.Points(stars, starMaterial));
+
+// SUN
 const sun = new THREE.Mesh(
   new THREE.SphereGeometry(5,64,64),
   new THREE.MeshBasicMaterial({color:0xffcc00})
@@ -222,16 +263,99 @@ function createPlanet(size,color,dist,speed){
   const pivot = new THREE.Object3D();
   scene.add(pivot);
   pivot.add(mesh);
+
   mesh.position.x = dist;
 
   return {pivot, speed};
 }
 
-const earth = createPlanet(1,0x3399ff,14,0.01);
+// PLANETS
+const mercury = createPlanet(0.5,0xaaaaaa,8,0.02);
+const venus   = createPlanet(0.9,0xffcc99,11,0.015);
+const earth   = createPlanet(1,0x3399ff,14,0.01);
+const mars    = createPlanet(0.8,0xff3300,17,0.008);
+const jupiter = createPlanet(2.5,0xffcc99,22,0.006);
+const saturn  = createPlanet(2.2,0xffddaa,28,0.005);
+const uranus  = createPlanet(1.5,0x66ffff,34,0.003);
+const neptune = createPlanet(1.5,0x3366ff,40,0.002);
+
+// EARTH ROTATION (day/night feel)
+earth.pivot.children[0].rotation.y = 0;
+
+// MOON 🌙
+const moonGeo = new THREE.SphereGeometry(0.27, 32, 32);
+const moonMat = new THREE.MeshStandardMaterial({color:0x888888});
+const moon = new THREE.Mesh(moonGeo, moonMat);
+
+const moonPivot = new THREE.Object3D();
+earth.pivot.children[0].add(moonPivot);
+moonPivot.add(moon);
+moon.position.x = 2;
+
+// SATURN RINGS
+const ringGeo = new THREE.RingGeometry(3,5,64);
+const ringMat = new THREE.MeshBasicMaterial({color:0xcccccc, side:THREE.DoubleSide});
+const ring = new THREE.Mesh(ringGeo, ringMat);
+ring.rotation.x = Math.PI/2;
+saturn.pivot.children[0].add(ring);
+
+// GLOW EFFECT ✨
+function addGlow(mesh, color) {
+  const glowGeo = new THREE.SphereGeometry(mesh.geometry.parameters.radius * 1.4, 32, 32);
+  const glowMat = new THREE.MeshBasicMaterial({
+    color: color,
+    transparent: true,
+    opacity: 0.2
+  });
+  const glow = new THREE.Mesh(glowGeo, glowMat);
+  mesh.add(glow);
+}
+
+[mercury, venus, earth, mars, jupiter, saturn, uranus, neptune].forEach(p => {
+  addGlow(p.pivot.children[0], 0x00ffff);
+});
+
+// CLICK INTERACTION 🎮
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener('click', (event) => {
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / 500) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+
+  const objects = [
+    mercury.pivot.children[0], venus.pivot.children[0], earth.pivot.children[0],
+    mars.pivot.children[0], jupiter.pivot.children[0], saturn.pivot.children[0],
+    uranus.pivot.children[0], neptune.pivot.children[0]
+  ];
+
+  const intersects = raycaster.intersectObjects(objects);
+
+  if (intersects.length > 0) {
+    alert("You clicked a planet! 🚀");
+  }
+});
 
 function animate(){
   requestAnimationFrame(animate);
+
+  mercury.pivot.rotation.y += mercury.speed;
+  venus.pivot.rotation.y += venus.speed;
   earth.pivot.rotation.y += earth.speed;
+  mars.pivot.rotation.y += mars.speed;
+  jupiter.pivot.rotation.y += jupiter.speed;
+  saturn.pivot.rotation.y += saturn.speed;
+  uranus.pivot.rotation.y += uranus.speed;
+  neptune.pivot.rotation.y += neptune.speed;
+
+  // Earth self rotation
+  earth.pivot.children[0].rotation.y += 0.02;
+
+  // Moon orbit
+  moonPivot.rotation.y += 0.03;
+
   controls.update();
   renderer.render(scene, camera);
 }

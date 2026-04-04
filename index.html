@@ -201,30 +201,104 @@ const controls=new THREE.OrbitControls(camera,renderer.domElement);
 scene.add(new THREE.PointLight(0xffffff,2));
 scene.add(new THREE.AmbientLight(0x222222));
 
+// TEXTURE LOADER
+const loader = new THREE.TextureLoader();
+
+// stars
 const stars=new THREE.BufferGeometry();
 let verts=[];
 for(let i=0;i<4000;i++){verts.push((Math.random()-0.5)*2000,(Math.random()-0.5)*2000,(Math.random()-0.5)*2000);} 
 stars.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
 scene.add(new THREE.Points(stars,new THREE.PointsMaterial({color:0xffffff})));
 
-const sun=new THREE.Mesh(new THREE.SphereGeometry(5,64,64),new THREE.MeshBasicMaterial({color:0xffcc00}));
+// sun (textured)
+const sun=new THREE.Mesh(
+ new THREE.SphereGeometry(5,64,64),
+ new THREE.MeshBasicMaterial({ map: loader.load("https://threejs.org/examples/textures/planets/sun.jpg") })
+);
 scene.add(sun);
 
-function planet(size,color,dist,speed){
- const mesh=new THREE.Mesh(new THREE.SphereGeometry(size,32,32),new THREE.MeshStandardMaterial({color}));
- const pivot=new THREE.Object3D();
- scene.add(pivot); pivot.add(mesh); mesh.position.x=dist;
- return {pivot,speed,mesh};
+function planet(size, texture, dist, speed){
+ const material = texture
+   ? new THREE.MeshStandardMaterial({ map: loader.load(texture) })
+   : new THREE.MeshStandardMaterial({ color: 0xffffff });
+
+ const mesh = new THREE.Mesh(
+   new THREE.SphereGeometry(size, 32, 32),
+   material
+ );
+
+ const pivot = new THREE.Object3D();
+ scene.add(pivot);
+ pivot.add(mesh);
+ mesh.position.x = dist;
+
+ return { pivot, speed, mesh };
 }
 
-const mercury=planet(0.5,0xaaa,8,0.02);
-const venus=planet(0.9,0xffcc99,11,0.015);
-const earth=planet(1,0x3399ff,14,0.01);
-const mars=planet(0.8,0xff3300,17,0.008);
-const jupiter=planet(2.5,0xffcc99,22,0.006);
-const saturn=planet(2.2,0xffddaa,28,0.005);
-const uranus=planet(1.5,0x66ffff,34,0.003);
-const neptune=planet(1.5,0x3366ff,40,0.002);
+const mercury = planet(0.5, null, 8, 0.02);
+
+const venus = planet(0.9,
+ "https://threejs.org/examples/textures/planets/venus.jpg",
+ 11, 0.015);
+
+const earth = planet(1,
+ "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
+ 14, 0.01);
+
+const mars = planet(0.8,
+ "https://threejs.org/examples/textures/planets/mars_1k_color.jpg",
+ 17, 0.008);
+
+const jupiter = planet(2.5,
+ "https://threejs.org/examples/textures/planets/jupiter.jpg",
+ 22, 0.006);
+
+const saturn = planet(2.2,
+ "https://threejs.org/examples/textures/planets/saturn.jpg",
+ 28, 0.005);
+
+const uranus = planet(1.5,
+ "https://threejs.org/examples/textures/planets/uranus.jpg",
+ 34, 0.003);
+
+const neptune = planet(1.5,
+ "https://threejs.org/examples/textures/planets/neptune.jpg",
+ 40, 0.002);
+
+// PLANET DATA
+const planetData = [
+ {mesh: mercury.mesh, name:"Mercury", desc:"Closest planet to the Sun."},
+ {mesh: venus.mesh, name:"Venus", desc:"Hottest planet with thick atmosphere."},
+ {mesh: earth.mesh, name:"Earth", desc:"Our home planet with life."},
+ {mesh: mars.mesh, name:"Mars", desc:"The red planet."},
+ {mesh: jupiter.mesh, name:"Jupiter", desc:"Largest planet in the solar system."},
+ {mesh: saturn.mesh, name:"Saturn", desc:"Famous for its rings."},
+ {mesh: uranus.mesh, name:"Uranus", desc:"Rotates on its side."},
+ {mesh: neptune.mesh, name:"Neptune", desc:"Farthest known planet."}
+];
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener('click', (event)=>{
+ mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+ mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+ raycaster.setFromCamera(mouse, camera);
+ const intersects = raycaster.intersectObjects(planetData.map(p=>p.mesh));
+
+ if(intersects.length>0){
+  const clicked = intersects[0].object;
+  const data = planetData.find(p=>p.mesh===clicked);
+
+  if(data){
+    document.getElementById('planetName').innerText = data.name;
+    document.getElementById('planetDesc').innerText = data.desc;
+    document.getElementById('planetInfo').style.display='block';
+  }
+ }
+});
 
 const moonPivot=new THREE.Object3D();
 earth.mesh.add(moonPivot);
@@ -252,6 +326,13 @@ animate();
 </script>
 
 <footer style="text-align:center;padding:20px;border-top:1px solid cyan;">© 2026 Science Vault</footer>
+
+
+<div id="planetInfo" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#000;padding:15px;border:1px solid cyan;border-radius:10px;display:none;max-width:300px;text-align:center;">
+<h3 id="planetName"></h3>
+<p id="planetDesc"></p>
+<button onclick="document.getElementById('planetInfo').style.display='none'">Close</button>
+</div>
 
 </body>
 </html>

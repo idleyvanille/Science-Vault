@@ -83,7 +83,7 @@ canvas{width:100%;}.post-card {
 <div id="about" class="page">
 <h2 style="text-align:center;">🌌 About Me</h2>
 <p style="text-align:center; max-width:600px; margin:auto;">
-I’m passionate about science, technology, and creativity. I enjoy exploring space, building simulations, and turning ideas into interactive experiences.
+HI!!! I’m Nikisha Pai, passionate about science, technology, and creativity. I enjoy exploring space, building simulations, and turning ideas into interactive experiences.
 <br><br>🚀 Always learning. Always building.
 </p>
 </div>
@@ -112,7 +112,51 @@ function addPost(){
  const t=document.getElementById('title').value;
  const c=document.getElementById('content').value;
  const img=document.getElementById('image').files[0];
+
  if(!t||!c){alert('Fill all fields');return;}
+
+ const post=document.createElement('div');
+ post.style.border='1px solid cyan';
+ post.style.padding='10px';
+ post.style.margin='10px';
+ post.style.cursor='pointer';
+ post.style.width='200px';
+ post.style.display='block';
+ post.classList.add('post-card');
+ post.classList.add('post-card');
+ post.style.verticalAlign='top';
+
+ let imageData='';
+
+ function openFull(){
+  const newWin=window.open('','_blank');
+  newWin.document.write(`
+    <html>
+    <head><title>${t}</title></head>
+    <body style="background:black;color:white;font-family:Arial;padding:20px;">
+    <h1>${t}</h1>
+    ${imageData ? `<img src="${imageData}" style="max-width:100%">` : ''}
+    <p>${c}</p>
+    </body>
+    </html>
+  `);
+ }
+
+ if(img){
+  const r=new FileReader();
+  r.onload=e=>{
+    imageData=e.target.result;
+    post.innerHTML=`<img src="${imageData}" style="width:100%;height:120px;object-fit:cover"><h4>${t}</h4>`;
+    post.onclick=openFull;
+  };
+  r.readAsDataURL(img);
+ } else {
+  post.innerHTML=`<div style="height:120px;background:#111"></div><h4>${t}</h4>`;
+  post.onclick=openFull;
+ }
+
+ document.getElementById('posts').prepend(post);
+}
  const div=document.createElement('div');
  if(img){
   const r=new FileReader();
@@ -121,6 +165,7 @@ function addPost(){
  } else div.innerHTML=`<h3>${t}</h3><p>${c}</p>`;
  document.getElementById('posts').prepend(div);
 }
+
 
 // MUSIC
 let playing=false;

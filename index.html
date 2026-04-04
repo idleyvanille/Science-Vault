@@ -13,54 +13,42 @@
 
 <style>
 body {
-  margin:0;
-  font-family:'Orbitron',sans-serif;
-  background: radial-gradient(circle at center, #050510, #000);
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  background: black;
   color: cyan;
 }
 
 nav {
-  display:flex;
-  justify-content:center;
-  gap:20px;
-  padding:15px;
-  background:rgba(0,0,0,0.6);
-  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  background: #111;
+  padding: 10px;
 }
 
 nav button {
-  background:transparent;
-  border:1px solid cyan;
-  color:cyan;
-  padding:10px 20px;
-  cursor:pointer;
-  transition:0.3s;
+  background: black;
+  color: cyan;
+  border: 1px solid cyan;
+  padding: 8px 15px;
+  cursor: pointer;
 }
-
-nav button:hover {
-  background:cyan;
-  color:black;
-  box-shadow:0 0 15px cyan;
-}
-
-.page { display:none; }
-.active { display:block; }
 
 .panel {
-  margin:20px;
-  padding:20px;
-  border-radius:15px;
-  background:rgba(0,0,0,0.5);
-  backdrop-filter:blur(10px);
-  border:1px solid rgba(0,255,255,0.3);
+  border: 1px solid cyan;
+  padding: 15px;
+  margin: 10px;
 }
 
-canvas { width:100%; border-radius:10px; }
+.page { display: none; }
+.active { display: block; }
 
-footer {
-  text-align:center;
-  padding:20px;
-  border-top:1px solid cyan;
+canvas { width: 100%; }
+
+#about {
+  text-align: center;
+  padding: 20px;
 }
 </style>
 </head>
@@ -77,23 +65,26 @@ footer {
 <div id="home" class="page active">
 
 <div class="panel">
-<h2>🪐 Solar System</h2>
+<h2>🪐 Solar System Simulation</h2>
 <canvas id="sim"></canvas>
 </div>
 
 <div class="panel">
-<h2>⚛️ Quantum Lab</h2>
+<h2>⚛️ Double Slit Simulation</h2>
 <canvas id="slitCanvas" width="800" height="200"></canvas>
 </div>
 
 </div>
 
 <div id="about" class="page">
-<h2 style="text-align:center;">🌌 About Me</h2>
-<p style="text-align:center; max-width:600px; margin:auto;">
-I’m passionate about science, technology, and creativity. Science Vault is where I explore space, physics, and coding.
-<br><br>🚀 Always learning. Always building.
+<h2>🌌 About Me</h2>
+<p>
+I’m passionate about science, technology, and creativity. I enjoy exploring space, building simulations, and turning ideas into interactive experiences.
 </p>
+<p>
+<b>Science Vault</b> is where I share astronomy, physics, and coding projects.
+</p>
+<p>🚀 Always learning. Always building.</p>
 </div>
 
 <button onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;">🔊</button>
@@ -102,67 +93,107 @@ I’m passionate about science, technology, and creativity. Science Vault is whe
 </audio>
 
 <script>
-// NAV
-function showPage(p){
- document.querySelectorAll('.page').forEach(pg=>pg.classList.remove('active'));
- document.getElementById(p).classList.add('active');
+// PAGE SWITCH
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(page).classList.add('active');
 }
 
 // MUSIC
-let playing=false;
-function toggleMusic(){
- const m=document.getElementById('bgMusic');
- if(!playing){m.play();playing=true;} else{m.pause();playing=false;}
+let playing = false;
+function toggleMusic() {
+  const music = document.getElementById("bgMusic");
+  if (!playing) {
+    music.play();
+    playing = true;
+  } else {
+    music.pause();
+    playing = false;
+  }
 }
 
-// SOLAR SYSTEM (FULL)
-const sim=document.getElementById('sim');
-const scene=new THREE.Scene();
-const renderer=new THREE.WebGLRenderer({canvas:sim, antialias:true});
-renderer.setSize(window.innerWidth,400);
-const camera=new THREE.PerspectiveCamera(75,window.innerWidth/400,0.1,1000);
-camera.position.z=40;
-const controls=new THREE.OrbitControls(camera,renderer.domElement);
+// THREE JS SOLAR SYSTEM
+const scene = new THREE.Scene();
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("sim"), antialias: true });
+renderer.setSize(window.innerWidth, 400);
 
-scene.add(new THREE.PointLight(0xffffff,2));
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/400, 0.1, 1000);
+camera.position.set(0, 20, 40);
 
-function planet(size,color,dist,speed){
- const mesh=new THREE.Mesh(new THREE.SphereGeometry(size,32,32),new THREE.MeshStandardMaterial({color}));
- const pivot=new THREE.Object3D();
- scene.add(pivot);
- pivot.add(mesh);
- mesh.position.x=dist;
- return {pivot,speed,mesh};
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+scene.add(new THREE.PointLight(0xffffff, 2));
+scene.add(new THREE.AmbientLight(0x222222));
+
+function createPlanet(size, color, dist, speed) {
+  const mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(size, 32, 32),
+    new THREE.MeshStandardMaterial({ color })
+  );
+
+  const pivot = new THREE.Object3D();
+  scene.add(pivot);
+  pivot.add(mesh);
+
+  mesh.position.x = dist;
+
+  return { pivot, speed, mesh };
 }
 
-const earth=planet(1,0x3399ff,12,0.01);
-const mars=planet(0.8,0xff3300,16,0.008);
+const earth = createPlanet(1, 0x3399ff, 14, 0.01);
+const mars = createPlanet(0.8, 0xff3300, 18, 0.008);
 
-function animate(){
- requestAnimationFrame(animate);
- earth.pivot.rotation.y+=earth.speed;
- mars.pivot.rotation.y+=mars.speed;
- earth.mesh.rotation.y+=0.02;
- renderer.render(scene,camera);
+function animate() {
+  requestAnimationFrame(animate);
+
+  earth.pivot.rotation.y += earth.speed;
+  mars.pivot.rotation.y += mars.speed;
+
+  earth.mesh.rotation.y += 0.02;
+
+  controls.update();
+  renderer.render(scene, camera);
 }
 animate();
 
-// QUANTUM SIM
-const c=document.getElementById('slitCanvas');
-const ctx=c.getContext('2d');
-let parts=[];
-function create(){return{x:100,y:Math.random()*200,vx:2,vy:(Math.random()-0.5)*2}}
-function loop(){
- ctx.fillStyle='black'; ctx.fillRect(0,0,800,200);
- ctx.fillStyle='cyan';
- if(Math.random()<0.3) parts.push(create());
- parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;ctx.fillRect(p.x,p.y,2,2)});
- requestAnimationFrame(loop);
+// SLIT SIMULATION
+const slitCanvas = document.getElementById("slitCanvas");
+const ctx = slitCanvas.getContext("2d");
+
+let particles = [];
+
+function createParticle() {
+  return {
+    x: 100,
+    y: Math.random() * 200,
+    vx: 2,
+    vy: (Math.random() - 0.5) * 2
+  };
 }
-loop();
+
+function animateSlit() {
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, 800, 200);
+
+  ctx.fillStyle = "cyan";
+
+  if (Math.random() < 0.3) particles.push(createParticle());
+
+  particles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    ctx.fillRect(p.x, p.y, 2, 2);
+  });
+
+  requestAnimationFrame(animateSlit);
+}
+
+animateSlit();
 </script>
 
-<footer>© 2026 Science Vault</footer>
+<footer style="text-align:center; padding:20px; border-top:1px solid cyan;">
+© 2026 Science Vault. All rights reserved.
+</footer>
 
 </body>
 </html>

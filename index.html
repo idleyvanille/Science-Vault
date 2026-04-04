@@ -30,6 +30,22 @@ canvas{width:100%;}
   box-shadow: 0 0 15px cyan;
 }
 
+#posts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 15px;
+  padding: 10px;
+}
+
+.post-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px cyan;
+}
+
 </style>
 </head>
 
@@ -109,6 +125,7 @@ function addPost(){
  post.style.cursor='pointer';
  post.style.width='200px';
  post.style.display='block';
+ post.classList.add('post-card');
  post.classList.add('post-card');
  post.style.verticalAlign='top';
 

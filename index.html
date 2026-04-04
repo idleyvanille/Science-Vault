@@ -30,6 +30,7 @@ function toggleMusic() {
 
 // DOUBLE SLIT SIMULATION (FULL INTERACTIVE)
 const slitCanvas = document.getElementById("slitCanvas");
+if(!slitCanvas){ console.error("Slit canvas not found"); return; }
 const ctx = slitCanvas.getContext("2d");
 
 let particles = [];
@@ -193,7 +194,7 @@ img {
   </button>
 </div>
 
-<audio id="bgMusic" loop>
+<audio id="bgMusic" loop preload="auto">
   <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6d4c3f3e7f.mp3?filename=space-ambient-11041.mp3" type="audio/mpeg">
 </audio>
 
@@ -250,7 +251,8 @@ img {
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function(){
+// Ensure everything loads properly
+window.onload = function(){
 
 // PAGE SWITCH
 function showPage(page) {
@@ -313,7 +315,10 @@ function addPost() {
 
 // THREE JS SETUP
 const scene = new THREE.Scene();
-const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("sim"), antialias: true });
+const simCanvas = document.getElementById("sim");
+if(!simCanvas){ console.error("Simulation canvas not found"); return; }
+
+const renderer = new THREE.WebGLRenderer({ canvas: simCanvas, antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, 500);
 

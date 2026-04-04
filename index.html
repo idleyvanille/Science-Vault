@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Science Vault</title>
 
+<!-- FAVICON -->
+<link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3212/3212608.png">
+
 <!-- FONT -->
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 
@@ -20,7 +23,24 @@ body {
   color: cyan;
 }
 
-/* UI PANEL */
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  background: #111;
+  padding: 10px;
+  box-shadow: 0 0 10px cyan;
+}
+
+nav button {
+  background: black;
+  color: cyan;
+  border: 1px solid cyan;
+  padding: 8px 15px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
 .panel {
   background: rgba(0,0,0,0.7);
   border: 1px solid cyan;
@@ -30,7 +50,21 @@ body {
   box-shadow: 0 0 10px cyan;
 }
 
-/* POSTS */
+.page {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease, transform 0.6s ease, box-shadow 0.6s;
+  transform: scale(0.98);
+}
+
+.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+  box-shadow: 0 0 20px cyan;
+}
+.active { display: block; }
+
 .post {
   border: 1px solid cyan;
   padding: 10px;
@@ -42,20 +76,6 @@ img {
   max-width: 100%;
   border-radius: 8px;
 }
-  const images = document.querySelectorAll(".gallery img");
-const popup = document.getElementById("popup");
-const popupImg = document.getElementById("popup-img");
-
-images.forEach(img=>{
-  img.onclick = ()=>{
-    popup.style.display = "block";
-    popupImg.src = img.src;
-  }
-});
-
-popup.onclick = ()=>{
-  popup.style.display = "none";
-};
 </style>
 </head>
 
@@ -63,25 +83,30 @@ popup.onclick = ()=>{
 
 <h1 style="text-align:center;">🌌 Science Vault</h1>
 
-<!-- SIMULATION -->
+<!-- NAVBAR -->
+<nav>
+  <button onclick="showPage('home')">Home</button>
+  <button onclick="showPage('about')">About Me</button>
+</nav>
+
+<!-- HOME PAGE -->
+<div id="home" class="page active">
+
 <div class="panel">
   <h2>🪐 Solar System Simulation</h2>
   <canvas id="sim"></canvas>
 </div>
 
-<!-- ESSAYS -->
 <div class="panel">
   <h2>📚 Essays</h2>
   <div id="posts"></div>
 </div>
 
-<!-- LOGIN -->
 <div class="panel">
   <input id="pw" placeholder="Admin password">
   <button onclick="login()">Login</button>
 </div>
 
-<!-- ADMIN PANEL -->
 <div id="admin" class="panel" style="display:none;">
   <h3>Add Essay</h3>
   <input id="title" placeholder="Title"><br><br>
@@ -89,30 +114,63 @@ popup.onclick = ()=>{
   <input type="file" id="image"><br><br>
   <button onclick="addPost()">Post</button>
 </div>
-<script>
-const scene = new THREE.Scene();
 
-// HIGH QUALITY RENDERER 🔥
-const renderer = new THREE.WebGLRenderer({
-  canvas: document.getElementById("sim"),
-  antialias: true
-});
+</div>
+
+<!-- ABOUT PAGE -->
+<div id="about" class="page">
+  <div class="panel">
+    <h2>👨‍🚀 About Me</h2>
+    <p>
+      Welcome to <b>Science Vault</b>! 🚀<br><br>
+      I'm a science enthusiast who loves exploring space, physics, and technology.
+      This website is where I share my thoughts, essays, and interactive simulations.
+    </p>
+
+    <p>
+      🧠 Interests:
+      <ul>
+        <li>Space & Astronomy</li>
+        <li>Physics Simulations</li>
+        <li>Technology & Coding</li>
+      </ul>
+    </p>
+
+    <p>
+      Built with passion using HTML, CSS, JavaScript, and Three.js.
+    </p>
+  </div>
+</div>
+
+<script>
+// PAGE SWITCHING
+function showPage(page) {
+  const pages = document.querySelectorAll('.page');
+
+  pages.forEach(p => {
+    p.classList.remove('active');
+  });
+
+  setTimeout(() => {
+    document.getElementById(page).classList.add('active');
+  }, 150); // slight delay for smooth fade
+}
+
+// THREE JS SETUP
+const scene = new THREE.Scene();
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("sim"), antialias: true });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, 500);
 
-// CAMERA
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth/500, 0.1, 2000);
 camera.position.set(0, 20, 60);
 
-// CONTROLS
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-// LIGHTING 💡
 const light = new THREE.PointLight(0xffffff, 2, 1000);
 scene.add(light);
 scene.add(new THREE.AmbientLight(0x222222));
 
-// STARFIELD 🌌
 const stars = new THREE.BufferGeometry();
 const starVertices = [];
 for(let i=0;i<8000;i++){
@@ -124,14 +182,12 @@ stars.setAttribute('position', new THREE.Float32BufferAttribute(starVertices,3))
 const starMaterial = new THREE.PointsMaterial({color:0xffffff});
 scene.add(new THREE.Points(stars, starMaterial));
 
-// SUN ☀️
 const sun = new THREE.Mesh(
   new THREE.SphereGeometry(5,64,64),
   new THREE.MeshBasicMaterial({color:0xffcc00})
 );
 scene.add(sun);
 
-// PLANET CREATOR
 function createPlanet(size,color,dist,speed){
   const geo = new THREE.SphereGeometry(size,32,32);
   const mat = new THREE.MeshStandardMaterial({color});
@@ -146,7 +202,6 @@ function createPlanet(size,color,dist,speed){
   return {pivot, speed};
 }
 
-// ALL PLANETS 🪐
 const mercury = createPlanet(0.5,0xaaaaaa,8,0.02);
 const venus   = createPlanet(0.9,0xffcc99,11,0.015);
 const earth   = createPlanet(1,0x3399ff,14,0.01);
@@ -156,14 +211,12 @@ const saturn  = createPlanet(2.2,0xffddaa,28,0.005);
 const uranus  = createPlanet(1.5,0x66ffff,34,0.003);
 const neptune = createPlanet(1.5,0x3366ff,40,0.002);
 
-// SATURN RINGS 💍
 const ringGeo = new THREE.RingGeometry(3,5,64);
 const ringMat = new THREE.MeshBasicMaterial({color:0xcccccc, side:THREE.DoubleSide});
 const ring = new THREE.Mesh(ringGeo, ringMat);
 ring.rotation.x = Math.PI/2;
 saturn.pivot.children[0].add(ring);
 
-// ANIMATION
 function animate(){
   requestAnimationFrame(animate);
 
@@ -181,30 +234,13 @@ function animate(){
 }
 animate();
 
-// RESIZE FIX
 window.addEventListener("resize", ()=>{
   renderer.setSize(window.innerWidth, 500);
   camera.aspect = window.innerWidth/500;
   camera.updateProjectionMatrix();
 });
-  const images = document.querySelectorAll(".gallery img");
-const popup = document.getElementById("popup");
-const popupImg = document.getElementById("popup-img");
-
-images.forEach(img=>{
-  img.onclick = ()=>{
-    popup.style.display = "block";
-    popupImg.src = img.src;
-  }
-});
-
-popup.onclick = ()=>{
-  popup.style.display = "none";
-};
 </script>
-<div id="popup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:black;">
-  <img id="popup-img" style="max-width:90%; max-height:90%; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
-</div>
 
 </body>
 </html>
+

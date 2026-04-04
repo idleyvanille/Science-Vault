@@ -33,6 +33,17 @@ nav button {
   border: 1px solid cyan;
   padding: 8px 15px;
   cursor: pointer;
+  transition: 0.3s ease;
+}
+
+nav button:hover {
+  background: cyan;
+  color: black;
+  box-shadow: 0 0 10px cyan, 0 0 20px cyan, 0 0 30px cyan;
+}
+
+nav button:active {
+  box-shadow: 0 0 5px cyan;
 }
 
 .panel {
@@ -112,7 +123,7 @@ function toggleMusic() {
   }
 }
 
-// THREE JS SOLAR SYSTEM
+// THREE JS SOLAR SYSTEM (NO PLANET GLOW)
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("sim"), antialias: true });
 renderer.setSize(window.innerWidth, 400);

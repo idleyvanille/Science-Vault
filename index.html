@@ -5,455 +5,157 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Science Vault</title>
 
-<!-- FAVICON -->
 <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3212/3212608.png">
-
-<!-- FONT -->
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 
-<!-- THREE JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
-// BACKGROUND MUSIC
-const music = document.getElementById("bgMusic");
-let isPlaying = false;
-
-function toggleMusic() {
-  if (!isPlaying) {
-    music.play();
-    isPlaying = true;
-  } else {
-    music.pause();
-    isPlaying = false;
-  }
-}
-
-
-// DOUBLE SLIT SIMULATION (FULL INTERACTIVE)
-const slitCanvas = document.getElementById("slitCanvas");
-if(!slitCanvas){ console.error("Slit canvas not found"); return; }
-const ctx = slitCanvas.getContext("2d");
-
-let particles = [];
-let mode = "particle";
-let wavelength = 0.05;
-let slitGap = 60;
-
-// UI CONTROLS
-const controlsDiv = document.createElement("div");
-controlsDiv.style = "color:cyan;padding:10px;";
-controlsDiv.innerHTML = `
-<button onclick="toggleMode()">Toggle Wave/Particle</button>
-<br><br>
-<label>Wavelength</label>
-<input type="range" min="0.01" max="0.1" step="0.005" value="0.05" oninput="updateWave(this.value)">
-<br><br>
-<label>Slit Distance</label>
-<input type="range" min="30" max="100" value="60" oninput="updateSlit(this.value)">
-<p id="explain">Particle mode: electrons behave like particles.</p>
-`;
-slitCanvas.parentElement.appendChild(controlsDiv);
-
-function toggleMode(){
-  mode = mode === "particle" ? "wave" : "particle";
-  document.getElementById("explain").innerText =
-    mode === "particle"
-    ? "Particle mode: particles hit screen individually 🎯"
-    : "Wave mode: interference pattern forms 🌊";
-}
-
-function updateWave(val){ wavelength = parseFloat(val); }
-function updateSlit(val){ slitGap = parseInt(val); }
-
-function createParticle() {
-  return {
-    x: 110,
-    y: Math.random() > 0.5 ? 100 - slitGap/2 : 100 + slitGap/2,
-    speedX: 2 + Math.random(),
-    spread: (Math.random() - 0.5) * 2
-  };
-}
-
-function drawSlits() {
-  ctx.fillStyle = "white";
-  ctx.fillRect(100,100 - slitGap/2 - 20,10,40);
-  ctx.fillRect(100,100 + slitGap/2 - 20,10,40);
-}
-
-function animateSlit(){
-  ctx.clearRect(0,0,800,200);
-  drawSlits();
-
-  if(mode === "particle"){
-    if(Math.random() < 0.3) particles.push(createParticle());
-
-    particles.forEach(p => {
-      p.x += p.speedX;
-      p.y += p.spread;
-      ctx.fillStyle = "cyan";
-      ctx.fillRect(p.x, p.y, 2, 2);
-    });
-
-  } else {
-    for(let x=200; x<800; x++){
-      let intensity = Math.sin(x * wavelength);
-      let brightness = Math.abs(intensity) * 255;
-      ctx.fillStyle = `rgb(${brightness},${brightness},${brightness})`;
-      ctx.fillRect(x, 0, 1, 200);
-    }
-  }
-
-  requestAnimationFrame(animateSlit);
-}
-
-animateSlit();
-
-});
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128/examples/js/controls/OrbitControls.js"></script>
 
 <style>
-body {
-  margin: 0;
-  font-family: 'Orbitron', sans-serif;
-  background: black;
-  color: cyan;
-}
-
-nav {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  background: #111;
-  padding: 10px;
-  box-shadow: 0 0 10px cyan;
-}
-
-nav button {
-  background: black;
-  color: cyan;
-  border: 1px solid cyan;
-  padding: 8px 15px;
-  cursor: pointer;
-  border-radius: 6px;
-}
-
-.panel {
-  background: rgba(0,0,0,0.7);
-  border: 1px solid cyan;
-  padding: 15px;
-  margin: 10px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px cyan;
-}
-
-.page {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.6s ease, transform 0.6s ease;
-  transform: scale(0.98);
-  display: none;
-}
-
-.active {
-  opacity: 1;
-  pointer-events: auto;
-  transform: scale(1);
-  display: block;
-}
-
-.post {
-  border: 1px solid cyan;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 10px;
-}
-
-img {
-  max-width: 100%;
-  border-radius: 8px;
-}
-
-#about {
-  text-align: center;
-  padding: 20px;
-  margin-top: 0;
-}
+body { margin:0; font-family:'Orbitron',sans-serif; background:black; color:cyan; }
+nav { display:flex; justify-content:center; gap:20px; background:#111; padding:10px; }
+nav button { background:black; color:cyan; border:1px solid cyan; padding:8px 15px; }
+.panel { border:1px solid cyan; padding:15px; margin:10px; }
+.page { display:none; }
+.active { display:block; }
+#about { text-align:center; padding:20px; }
+canvas { width:100%; }
 </style>
 </head>
 
 <body>
 
-<!-- STICKERS -->
-<img src="/mnt/data/image.png" style="position:fixed; top:10px; left:10px; width:120px; opacity:0.8; z-index:0;">
-<img src="/mnt/data/image.png" style="position:fixed; bottom:10px; right:10px; width:120px; opacity:0.8; transform:rotate(180deg); z-index:0;">
-
-<!-- AUDIO CONTROL -->
-<div style="position:fixed; top:10px; right:10px; z-index:999;">
-  <button onclick="toggleMusic()" style="background:black;color:cyan;border:1px solid cyan;padding:8px;border-radius:6px;">
-    🔊 Toggle Music
-  </button>
-</div>
-
-<audio id="bgMusic" loop preload="auto">
-  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6d4c3f3e7f.mp3?filename=space-ambient-11041.mp3" type="audio/mpeg">
-</audio>
-
-
 <h1 style="text-align:center;">🌌 Science Vault</h1>
 
 <nav>
-  <button onclick="showPage('home')">Home</button>
-  <button onclick="showPage('about')">About Me</button>
+<button onclick="showPage('home')">Home</button>
+<button onclick="showPage('about')">About</button>
 </nav>
 
 <div id="home" class="page active">
-
 <div class="panel">
-  <h2>🪐 Solar System Simulation</h2>
-  <canvas id="sim"></canvas>
+<h2>🪐 Solar System</h2>
+<canvas id="sim"></canvas>
 </div>
 
 <div class="panel">
-  <h2>⚛️ Double Slit Experiment (Quantum Physics)</h2>
-  <canvas id="slitCanvas" width="800" height="200" style="background:black;"></canvas>
+<h2>⚛️ Double Slit</h2>
+<canvas id="slitCanvas" width="800" height="200"></canvas>
 </div>
 
 <div class="panel">
-  <h2>📚 Essays</h2>
-  <div id="posts"></div>
-</div>
-
-<div class="panel">
-  <input id="pw" placeholder="Admin password">
-  <button onclick="login()">Login</button>
+<input id="pw" placeholder="password">
+<button onclick="login()">Login</button>
 </div>
 
 <div id="admin" class="panel" style="display:none;">
-  <h3>Add Essay</h3>
-  <input id="title" placeholder="Title"><br><br>
-  <textarea id="content" placeholder="Write essay"></textarea><br><br>
-  <input type="file" id="image"><br><br>
-  <button onclick="addPost()">Post</button>
+<input id="title" placeholder="Title"><br><br>
+<textarea id="content"></textarea><br><br>
+<input type="file" id="image"><br><br>
+<button onclick="addPost()">Post</button>
 </div>
 
+<div id="posts"></div>
 </div>
 
 <div id="about" class="page">
-  <h2>🌌 About Me</h2>
-  <p>
-    I’m passionate about science, technology, and creativity. I enjoy exploring space, building simulations, and turning ideas into interactive experiences.
-  </p>
-  <p>
-    <b>Science Vault</b> is where I share astronomy, physics, and coding projects.
-  </p>
-  <p>🚀 Always learning. Always building.</p>
+<h2>🌌 About Me</h2>
+<p>I’m passionate about science, tech, and creativity.</p>
+<p><b>Science Vault</b> is where I share physics and coding.</p>
+<p>🚀 Always learning.</p>
 </div>
-</div>
+
+<!-- MUSIC -->
+<button onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;">🔊</button>
+<audio id="bgMusic" loop>
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6d4c3f3e7f.mp3?filename=space-ambient-11041.mp3">
+</audio>
 
 <script>
-// Ensure everything loads properly
-window.onload = function(){
-
-// PAGE SWITCH
-function showPage(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  setTimeout(() => {
-    document.getElementById(page).classList.add('active');
-  }, 100);
+// NAV
+function showPage(p){
+ document.querySelectorAll('.page').forEach(pg=>pg.classList.remove('active'));
+ document.getElementById(p).classList.add('active');
 }
 
 // LOGIN
-const ADMIN_PASSWORD = "Redsaucepasta@67";
-
-function login() {
-  const input = document.getElementById("pw").value;
-  if (input === ADMIN_PASSWORD) {
-    document.getElementById("admin").style.display = "block";
-    alert("Admin access granted ✅");
-  } else {
-    alert("Wrong password ❌");
-  }
+function login(){
+ if(document.getElementById('pw').value==="Redsaucepasta@67"){
+ document.getElementById('admin').style.display='block';
+ }
 }
 
-// POSTS
-function addPost() {
-  const title = document.getElementById("title").value;
-  const content = document.getElementById("content").value;
-  const fileInput = document.getElementById("image");
-  const postsContainer = document.getElementById("posts");
+function addPost(){
+ const t=document.getElementById('title').value;
+ const c=document.getElementById('content').value;
+ const img=document.getElementById('image').files[0];
+ const div=document.createElement('div');
 
-  if (!title || !content) {
-    alert("Fill all fields!");
-    return;
-  }
+ if(!t || !c){ alert('fill all fields'); return; }
 
-  const reader = new FileReader();
-
-  reader.onload = function(e) {
-    const postDiv = document.createElement("div");
-    postDiv.className = "post";
-
-    postDiv.innerHTML = `
-      <h3>${title}</h3>
-      ${fileInput.files[0] ? `<img src="${e.target.result}">` : ""}
-      <p>${content}</p>
-    `;
-
-    postsContainer.prepend(postDiv);
-
-    document.getElementById("title").value = "";
-    document.getElementById("content").value = "";
-    fileInput.value = "";
+ if(img){
+  const r=new FileReader();
+  r.onload=e=>{
+    div.innerHTML=`<h3>${t}</h3><img src="${e.target.result}"><p>${c}</p>`;
   };
+  r.readAsDataURL(img);
+ } else {
+  div.innerHTML=`<h3>${t}</h3><p>${c}</p>`;
+ }
 
-  if (fileInput.files[0]) {
-    reader.readAsDataURL(fileInput.files[0]);
-  } else {
-    reader.onload({ target: { result: "" } });
-  }
+ document.getElementById('posts').prepend(div);
+}
+</h3><p>${c}</p>`;
+ if(img){
+ const r=new FileReader();
+ r.onload=e=>{div.innerHTML=`<h3>${t}</h3><img src="${e.target.result}"><p>${c}</p>`};
+ r.readAsDataURL(img);
+ }
+ div.innerHTML=html;
+ document.getElementById('posts').prepend(div);
 }
 
-// THREE JS SETUP
-const scene = new THREE.Scene();
-const simCanvas = document.getElementById("sim");
-if(!simCanvas){ console.error("Simulation canvas not found"); return; }
+// MUSIC
+let playing=false;
+function toggleMusic(){
+ const m=document.getElementById('bgMusic');
+ if(!playing){m.play();playing=true;} else{m.pause();playing=false;}
+}
 
-const renderer = new THREE.WebGLRenderer({ canvas: simCanvas, antialias: true });
+// THREE SIM
+const sim=document.getElementById('sim');
+const scene=new THREE.Scene();
+const renderer=new THREE.WebGLRenderer({canvas:sim, antialias:true});
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth, 500);
-
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/500, 0.1, 2000);
-camera.position.set(0, 20, 60);
-
-const controls = new THREE.OrbitControls(camera, renderer.domElement);
-
-const light = new THREE.PointLight(0xffffff, 2, 1000);
-scene.add(light);
-scene.add(new THREE.AmbientLight(0x222222));
-
-// STARFIELD
-const stars = new THREE.BufferGeometry();
-const starVertices = [];
-for(let i=0;i<8000;i++){
-  starVertices.push((Math.random()-0.5)*2000);
-  starVertices.push((Math.random()-0.5)*2000);
-  starVertices.push((Math.random()-0.5)*2000);
-}
-stars.setAttribute('position', new THREE.Float32BufferAttribute(starVertices,3));
-const starMaterial = new THREE.PointsMaterial({color:0xffffff});
-scene.add(new THREE.Points(stars, starMaterial));
-
-// SUN
-const sun = new THREE.Mesh(
-  new THREE.SphereGeometry(5,64,64),
-  new THREE.MeshBasicMaterial({color:0xffcc00})
-);
+renderer.setSize(window.innerWidth,300);
+const camera=new THREE.PerspectiveCamera(75,window.innerWidth/300,0.1,1000);
+camera.position.z=30;
+const controls=new THREE.OrbitControls(camera,renderer.domElement);
+const sun=new THREE.Mesh(new THREE.SphereGeometry(3,32,32),new THREE.MeshBasicMaterial({color:0xffcc00}));
 scene.add(sun);
+const earthPivot=new THREE.Object3D();
+scene.add(earthPivot);
+const earth=new THREE.Mesh(new THREE.SphereGeometry(1,32,32),new THREE.MeshStandardMaterial({color:0x3399ff}));
+earth.position.x=10;
+earthPivot.add(earth);
+scene.add(new THREE.PointLight(0xffffff,2));
+function animate(){requestAnimationFrame(animate);earthPivot.rotation.y+=0.01;earth.rotation.y+=0.02;renderer.render(scene,camera);}animate();
 
-function createPlanet(size,color,dist,speed){
-  const mesh = new THREE.Mesh(
-    new THREE.SphereGeometry(size,32,32),
-    new THREE.MeshStandardMaterial({color})
-  );
-
-  const pivot = new THREE.Object3D();
-  scene.add(pivot);
-  pivot.add(mesh);
-
-  mesh.position.x = dist;
-
-  return {pivot, speed};
-}
-
-// PLANETS
-const mercury = createPlanet(0.5,0xaaaaaa,8,0.02);
-const venus   = createPlanet(0.9,0xffcc99,11,0.015);
-const earth   = createPlanet(1,0x3399ff,14,0.01);
-const mars    = createPlanet(0.8,0xff3300,17,0.008);
-const jupiter = createPlanet(2.5,0xffcc99,22,0.006);
-const saturn  = createPlanet(2.2,0xffddaa,28,0.005);
-const uranus  = createPlanet(1.5,0x66ffff,34,0.003);
-const neptune = createPlanet(1.5,0x3366ff,40,0.002);
-
-// EARTH ROTATION (day/night feel)
-earth.pivot.children[0].rotation.y = 0;
-
-// MOON 🌙
-const moonGeo = new THREE.SphereGeometry(0.27, 32, 32);
-const moonMat = new THREE.MeshStandardMaterial({color:0x888888});
-const moon = new THREE.Mesh(moonGeo, moonMat);
-
-const moonPivot = new THREE.Object3D();
-earth.pivot.children[0].add(moonPivot);
-moonPivot.add(moon);
-moon.position.x = 2;
-
-// SATURN RINGS
-const ringGeo = new THREE.RingGeometry(3,5,64);
-const ringMat = new THREE.MeshBasicMaterial({color:0xcccccc, side:THREE.DoubleSide});
-const ring = new THREE.Mesh(ringGeo, ringMat);
-ring.rotation.x = Math.PI/2;
-saturn.pivot.children[0].add(ring);
-
-// (Glow effect removed as requested)
-  const glow = new THREE.Mesh(glowGeo, glowMat);
-  mesh.add(glow);
-}
-
-[mercury, venus, earth, mars, jupiter, saturn, uranus, neptune].forEach(p => {
-  addGlow(p.pivot.children[0], 0x00ffff);
-});
-
-// CLICK INTERACTION 🎮
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-window.addEventListener('click', (event) => {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / 500) * 2 + 1;
-
-  raycaster.setFromCamera(mouse, camera);
-
-  const objects = [
-    mercury.pivot.children[0], venus.pivot.children[0], earth.pivot.children[0],
-    mars.pivot.children[0], jupiter.pivot.children[0], saturn.pivot.children[0],
-    uranus.pivot.children[0], neptune.pivot.children[0]
-  ];
-
-  const intersects = raycaster.intersectObjects(objects);
-
-  if (intersects.length > 0) {
-    alert("You clicked a planet! 🚀");
-  }
-});
-
-function animate(){
-  requestAnimationFrame(animate);
-
-  mercury.pivot.rotation.y += mercury.speed;
-  venus.pivot.rotation.y += venus.speed;
-  earth.pivot.rotation.y += earth.speed;
-  mars.pivot.rotation.y += mars.speed;
-  jupiter.pivot.rotation.y += jupiter.speed;
-  saturn.pivot.rotation.y += saturn.speed;
-  uranus.pivot.rotation.y += uranus.speed;
-  neptune.pivot.rotation.y += neptune.speed;
-
-  // Earth self rotation
-  earth.pivot.children[0].rotation.y += 0.02;
-
-  // Moon orbit
-  moonPivot.rotation.y += 0.03;
-
-  controls.update();
-  renderer.render(scene, camera);
-}
-animate();
+// SLIT
+const s=document.getElementById('slitCanvas');
+const ctx=s.getContext('2d');
+let parts=[];
+function create(){return{x:100,y:Math.random()*200,vx:2,vy:(Math.random()-0.5)*2}}
+function loop(){
+ctx.fillStyle='black';
+ctx.fillRect(0,0,800,200);
+ctx.fillStyle='cyan';
+if(Math.random()<0.3)parts.push(create());
+parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;ctx.fillRect(p.x,p.y,2,2)});
+requestAnimationFrame(loop);}loop();
 </script>
 
-<footer style="text-align:center; padding:20px; border-top:1px solid cyan; margin-top:20px;">
-  © 2026 Science Vault. All rights reserved.
-</footer>
+<footer style="text-align:center;">© 2026 Science Vault</footer>
 
 </body>
 </html>

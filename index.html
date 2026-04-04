@@ -76,14 +76,27 @@ canvas { width: 100%; }
 <div id="home" class="page active">
 
 <div class="panel">
+<h2>🔐 Admin Login</h2>
+<input id="pw" placeholder="Enter password">
+<button onclick="login()">Login</button>
+</div>
+
+<div id="admin" class="panel" style="display:none;">
+<h3>Add Essay</h3>
+<input id="title" placeholder="Title"><br><br>
+<textarea id="content" placeholder="Write essay"></textarea><br><br>
+<input type="file" id="image"><br><br>
+<button onclick="addPost()">Post</button>
+</div>
+
+<div id="posts"></div>
+
+<div class="panel">
 <h2>🪐 Solar System Simulation</h2>
 <canvas id="sim"></canvas>
 </div>
 
-<div class="panel">
-<h2>⚛️ Double Slit Simulation</h2>
-<canvas id="slitCanvas" width="800" height="200"></canvas>
-</div>
+
 
 </div>
 
@@ -110,15 +123,39 @@ function showPage(page) {
   document.getElementById(page).classList.add('active');
 }
 
-// MUSIC
 let playing = false;
+const music = document.getElementById("bgMusic");
+
 function toggleMusic() {
-  const music = document.getElementById("bgMusic");
   if (!playing) {
+    music.volume = 0;
     music.play();
+
+    // FADE IN 🔊
+    let vol = 0;
+    const fade = setInterval(() => {
+      if (vol < 0.5) {
+        vol += 0.02;
+        music.volume = vol;
+      } else {
+        clearInterval(fade);
+      }
+    }, 100);
+
     playing = true;
   } else {
-    music.pause();
+    // FADE OUT 🔉
+    let vol = music.volume;
+    const fade = setInterval(() => {
+      if (vol > 0.02) {
+        vol -= 0.02;
+        music.volume = vol;
+      } else {
+        music.pause();
+        clearInterval(fade);
+      }
+    }, 100);
+
     playing = false;
   }
 }
@@ -151,14 +188,86 @@ function createPlanet(size, color, dist, speed) {
   return { pivot, speed, mesh };
 }
 
-const earth = createPlanet(1, 0x3399ff, 14, 0.01);
-const mars = createPlanet(0.8, 0xff3300, 18, 0.008);
+const mercury = createPlanet(0.5,0xaaaaaa,8,0.02);
+const venus   = createPlanet(0.9,0xffcc99,11,0.015);
+const earth   = createPlanet(1,0x3399ff,14,0.01);
+const mars    = createPlanet(0.8,0xff3300,17,0.008);
+const jupiter = createPlanet(2.5,0xffcc99,22,0.006);
+const saturn  = createPlanet(2.2,0xffddaa,28,0.005);
+const uranus  = createPlanet(1.5,0x66ffff,34,0.003);
+const neptune = createPlanet(1.5,0x3366ff,40,0.002);
+
+// MOON 🌙 (orbiting Earth)
+const moonGeo = new THREE.SphereGeometry(0.27, 32, 32);
+const moonMat = new THREE.MeshStandardMaterial({color:0xaaaaaa});
+const moon = new THREE.Mesh(moonGeo, moonMat);
+
+const moonPivot = new THREE.Object3D();
+earth.mesh.add(moonPivot);
+moonPivot.add(moon);
+moon.position.x = 2;
+
+// SATURN RINGS 💍
+const ringGeo = new THREE.RingGeometry(3,5,64);
+const ringMat = new THREE.MeshBasicMaterial({color:0xcccccc, side:THREE.DoubleSide});
+const ring = new THREE.Mesh(ringGeo, ringMat);
+ring.rotation.x = Math.PI/2;
+saturn.mesh.add(ring);
+
+// PLANET LABELS 🏷️
+const labelDiv = document.createElement("div");
+labelDiv.style.position = "fixed";
+labelDiv.style.color = "cyan";
+labelDiv.style.pointerEvents = "none";
+labelDiv.style.display = "none";
+document.body.appendChild(labelDiv);
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener("mousemove", (event)=>{
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / 400) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+
+  const objects = [
+    mercury.mesh, venus.mesh, earth.mesh, mars.mesh,
+    jupiter.mesh, saturn.mesh, uranus.mesh, neptune.mesh
+  ];
+
+  const names = [
+    "Mercury","Venus","Earth","Mars",
+    "Jupiter","Saturn","Uranus","Neptune"
+  ];
+
+  const intersects = raycaster.intersectObjects(objects);
+
+  if(intersects.length > 0){
+    const index = objects.indexOf(intersects[0].object);
+    labelDiv.style.display = "block";
+    labelDiv.innerText = names[index];
+    labelDiv.style.left = event.clientX + 10 + "px";
+    labelDiv.style.top = event.clientY + 10 + "px";
+  } else {
+    labelDiv.style.display = "none";
+  }
+});
 
 function animate() {
   requestAnimationFrame(animate);
 
+  mercury.pivot.rotation.y += mercury.speed;
+  venus.pivot.rotation.y += venus.speed;
   earth.pivot.rotation.y += earth.speed;
   mars.pivot.rotation.y += mars.speed;
+  jupiter.pivot.rotation.y += jupiter.speed;
+  saturn.pivot.rotation.y += saturn.speed;
+  uranus.pivot.rotation.y += uranus.speed;
+  neptune.pivot.rotation.y += neptune.speed;
+
+  // Moon orbit
+  moonPivot.rotation.y += 0.03;
 
   earth.mesh.rotation.y += 0.02;
 
@@ -167,39 +276,9 @@ function animate() {
 }
 animate();
 
-// SLIT SIMULATION
-const slitCanvas = document.getElementById("slitCanvas");
-const ctx = slitCanvas.getContext("2d");
 
-let particles = [];
 
-function createParticle() {
-  return {
-    x: 100,
-    y: Math.random() * 200,
-    vx: 2,
-    vy: (Math.random() - 0.5) * 2
-  };
-}
 
-function animateSlit() {
-  ctx.fillStyle = "black";
-  ctx.fillRect(0, 0, 800, 200);
-
-  ctx.fillStyle = "cyan";
-
-  if (Math.random() < 0.3) particles.push(createParticle());
-
-  particles.forEach(p => {
-    p.x += p.vx;
-    p.y += p.vy;
-    ctx.fillRect(p.x, p.y, 2, 2);
-  });
-
-  requestAnimationFrame(animateSlit);
-}
-
-animateSlit();
 </script>
 
 <footer style="text-align:center; padding:20px; border-top:1px solid cyan;">

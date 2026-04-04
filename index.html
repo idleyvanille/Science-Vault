@@ -17,28 +17,24 @@ body { margin:0; font-family:'Orbitron',sans-serif; background:black; color:cyan
 nav {
   display:flex; justify-content:center; gap:25px;
   background:#0a0a0a; padding:15px;
-  border-bottom:1px solid rgba(0,255,255,0.2);
 }
 
 nav button {
   background:black; color:cyan; border:1px solid cyan;
-  padding:8px 15px; cursor:pointer; transition:0.3s;
+  padding:8px 15px; cursor:pointer;
 }
-
 nav button:hover {
   background:cyan; color:black;
-  box-shadow:0 0 10px cyan,0 0 20px cyan;
+  box-shadow:0 0 10px cyan;
 }
 
 .panel {
-  border:1px solid rgba(0,255,255,0.2);
+  border:1px solid rgba(0,255,255,0.3);
   padding:20px; margin:20px;
   border-radius:12px;
-  background:rgba(0,0,0,0.6);
 }
 
 .page{display:none;} .active{display:block;}
-canvas{width:100%;}
 
 #posts {
   display:grid;
@@ -49,26 +45,20 @@ canvas{width:100%;}
 
 .post-card {
   background:#0a0a0a;
-  border:1px solid rgba(0,255,255,0.3);
+  border:1px solid cyan;
   border-radius:12px;
   overflow:hidden;
-  transition:all 0.3s ease;
-  cursor:pointer;
+  transition:0.3s;
 }
-
 .post-card:hover {
-  transform:translateY(-5px) scale(1.03);
-  box-shadow:0 10px 25px rgba(0,255,255,0.2);
-  border-color:cyan;
+  transform:scale(1.05);
+  box-shadow:0 0 15px cyan;
 }
-
 .post-card img {
   width:100%; height:140px; object-fit:cover;
 }
 
-.post-card h4 {
-  padding:10px; margin:0;
-}
+canvas { width:100%; }
 </style>
 </head>
 
@@ -85,14 +75,13 @@ canvas{width:100%;}
 
 <div class="panel">
 <h2>🔐 Admin Login</h2>
-<input id="pw" placeholder="Enter password">
+<input id="pw">
 <button onclick="login()">Login</button>
 </div>
 
 <div id="admin" class="panel" style="display:none;">
-<h3>Add Essay</h3>
 <input id="title" placeholder="Title"><br><br>
-<textarea id="content" placeholder="Write essay"></textarea><br><br>
+<textarea id="content"></textarea><br><br>
 <input type="file" id="image"><br><br>
 <button onclick="addPost()">Post</button>
 </div>
@@ -100,81 +89,74 @@ canvas{width:100%;}
 <div id="posts"></div>
 
 <div class="panel">
-<h2>🪐 Solar System Simulation</h2>
+<h2>🪐 Solar System</h2>
 <canvas id="sim"></canvas>
 </div>
 
 </div>
 
-<div id="postView" class="page">
-<h2 id="postTitle" style="text-align:center;"></h2>
-<div style="max-width:800px;margin:20px auto;">
-<img id="postImage" style="width:100%;display:none;">
-<p id="postContent" style="margin-top:15px;line-height:1.6;"></p>
-</div>
-<button onclick="showPage('home')" style="display:block;margin:20px auto;">⬅ Back</button>
-</div>
-
 <div id="about" class="page">
 <h2 style="text-align:center;">🌌 About Me</h2>
-<p style="text-align:center; max-width:600px; margin:auto;">
-HI!!! I’m Nikisha Pai, passionate about science, technology, and creativity.
-I enjoy exploring space, building simulations, and turning ideas into interactive experiences.
-<br><br>🚀 Always learning. Always building.
+<p style="text-align:center;">
+Hi, I’m Nikisha Pai. Passionate about science & tech 🚀
 </p>
+</div>
+
+<div id="postView" class="page">
+<h2 id="postTitle"></h2>
+<img id="postImage" style="width:100%;display:none;">
+<p id="postContent"></p>
+<button onclick="showPage('home')">⬅ Back</button>
+</div>
+
+<div id="planetInfo" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+background:black;padding:15px;border:1px solid cyan;display:none;">
+<h3 id="planetName"></h3>
+<p id="planetDesc"></p>
+<button onclick="planetInfo.style.display='none'">Close</button>
 </div>
 
 <button onclick="toggleMusic()" style="position:fixed;top:10px;right:10px;">🔊</button>
 <audio id="bgMusic" loop>
-<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6d4c3f3e7f.mp3?filename=space-ambient-11041.mp3">
+<source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_6d4c3f3e7f.mp3">
 </audio>
 
 <script>
-function showPage(page){
- document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
- document.getElementById(page).classList.add('active');
+// NAV
+function showPage(p){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ document.getElementById(p).classList.add('active');
 }
 
+// LOGIN
 function login(){
- const input=document.getElementById("pw").value;
- if(input==="Redsaucepasta@67"){
-  document.getElementById("admin").style.display="block";
- } else alert("Wrong password");
+ if(document.getElementById("pw").value==="Redsaucepasta@67"){
+  admin.style.display="block";
+ }
 }
 
+// POSTS
 function addPost(){
- const t=document.getElementById('title').value;
- const c=document.getElementById('content').value;
- const img=document.getElementById('image').files[0];
-
- if(!t||!c){alert('Fill all fields');return;}
-
- const post=document.createElement('div');
- post.classList.add('post-card');
+ let t=title.value,c=content.value,img=image.files[0];
+ let post=document.createElement('div');
+ post.className='post-card';
 
  let imageData='';
 
  function openFull(){
-  document.getElementById('postTitle').innerText=t;
-  document.getElementById('postContent').innerText=c;
-
-  if(imageData){
-    const im=document.getElementById('postImage');
-    im.src=imageData;
-    im.style.display='block';
-  } else {
-    document.getElementById('postImage').style.display='none';
-  }
-
+  postTitle.innerText=t;
+  postContent.innerText=c;
+  if(imageData){postImage.src=imageData;postImage.style.display='block';}
+  else postImage.style.display='none';
   showPage('postView');
  }
 
  if(img){
-  const r=new FileReader();
+  let r=new FileReader();
   r.onload=e=>{
-    imageData=e.target.result;
-    post.innerHTML=`<img src="${imageData}"><h4>${t}</h4>`;
-    post.onclick=openFull;
+   imageData=e.target.result;
+   post.innerHTML=`<img src="${imageData}"><h4>${t}</h4>`;
+   post.onclick=openFull;
   };
   r.readAsDataURL(img);
  } else {
@@ -182,132 +164,120 @@ function addPost(){
   post.onclick=openFull;
  }
 
- document.getElementById('posts').prepend(post);
+ posts.prepend(post);
 }
 
+// MUSIC
 let playing=false;
 function toggleMusic(){
- const m=document.getElementById("bgMusic");
- if(!playing){m.play();playing=true;} else {m.pause();playing=false;}
+ let m=bgMusic;
+ playing ? m.pause() : m.play();
+ playing=!playing;
 }
 
+// THREE JS
 const scene=new THREE.Scene();
-const renderer=new THREE.WebGLRenderer({canvas:document.getElementById("sim"),antialias:true});
+const renderer=new THREE.WebGLRenderer({canvas:sim,antialias:true});
 renderer.setSize(window.innerWidth,400);
-renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.outputEncoding=THREE.sRGBEncoding;
+
 const camera=new THREE.PerspectiveCamera(75,window.innerWidth/400,0.1,2000);
 camera.position.set(0,20,60);
+
 const controls=new THREE.OrbitControls(camera,renderer.domElement);
 
-// BETTER LIGHTING ☀️
-const light = new THREE.PointLight(0xffffff, 3, 2000);
-light.position.set(0,0,0);
+// LIGHT
+const light=new THREE.PointLight(0xffffff,3);
 scene.add(light);
-
 scene.add(new THREE.AmbientLight(0x555555));
 
-// TEXTURE LOADER
-const loader = new THREE.TextureLoader();
-loader.crossOrigin = "";
-
-// stars
+// STARS
 const stars=new THREE.BufferGeometry();
-let verts=[];
-for(let i=0;i<4000;i++){verts.push((Math.random()-0.5)*2000,(Math.random()-0.5)*2000,(Math.random()-0.5)*2000);} 
-stars.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
+let v=[];
+for(let i=0;i<4000;i++)v.push((Math.random()-0.5)*2000,(Math.random()-0.5)*2000,(Math.random()-0.5)*2000);
+stars.setAttribute('position',new THREE.Float32BufferAttribute(v,3));
 scene.add(new THREE.Points(stars,new THREE.PointsMaterial({color:0xffffff})));
 
-// sun (textured)
+// LOADER
+const loader=new THREE.TextureLoader();
+
+// SUN
 const sun=new THREE.Mesh(
  new THREE.SphereGeometry(5,64,64),
- new THREE.MeshBasicMaterial({ map: loader.load("https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/sun.jpg") })
+ new THREE.MeshBasicMaterial({map:loader.load("https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/sun.jpg")})
 );
 scene.add(sun);
 
-function planet(size, texture, dist, speed){
- const material = texture
-   ? new THREE.MeshStandardMaterial({
-       map: loader.load(texture),
-       roughness: 1,
-       metalness: 0
-     })
-   : new THREE.MeshStandardMaterial({ color: 0xffffff });
+// PLANET SAFE LOADER
+function planet(size,texture,dist,speed){
+ let mat=new THREE.MeshStandardMaterial({color:0xffffff});
+ let mesh=new THREE.Mesh(new THREE.SphereGeometry(size,32,32),mat);
+
+ let pivot=new THREE.Object3D();
+ scene.add(pivot); pivot.add(mesh);
+ mesh.position.x=dist;
+
+ if(texture){
+  loader.load(texture,(tex)=>{
+    mat.map=tex;
+    mat.needsUpdate=true;
+  });
+ }
+
+ return {pivot,speed,mesh};
 }
 
-const mercury = planet(0.5, null, 8, 0.02);
+// PLANETS
+const mercury=planet(0.5,null,8,0.02);
+const venus=planet(0.9,"https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/venus.jpg",11,0.015);
+const earth=planet(1,"https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg",14,0.01);
+const mars=planet(0.8,"https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/mars_1k_color.jpg",17,0.008);
+const jupiter=planet(2.5,"https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/jupiter.jpg",22,0.006);
+const saturn=planet(2.2,"https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/saturn.jpg",28,0.005);
+const uranus=planet(1.5,"https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/uranus.jpg",34,0.003);
+const neptune=planet(1.5,"https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/neptune.jpg",40,0.002);
 
-const venus = planet(0.9,
- "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/venus.jpg",
- 11, 0.015);
-
-const earth = planet(1,
- "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg",
- 14, 0.01);
-
-const mars = planet(0.8,
- "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/mars_1k_color.jpg",
- 17, 0.008);
-
-const jupiter = planet(2.5,
- "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/jupiter.jpg",
- 22, 0.006);
-
-const saturn = planet(2.2,
- "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/saturn.jpg",
- 28, 0.005);
-
-const uranus = planet(1.5,
- "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/uranus.jpg",
- 34, 0.003);
-
-const neptune = planet(1.5,
- "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/neptune.jpg",
- 40, 0.002);
-
-// PLANET DATA
-const planetData = [
- {mesh: mercury.mesh, name:"Mercury", desc:"Closest planet to the Sun."},
- {mesh: venus.mesh, name:"Venus", desc:"Hottest planet with thick atmosphere."},
- {mesh: earth.mesh, name:"Earth", desc:"Our home planet with life."},
- {mesh: mars.mesh, name:"Mars", desc:"The red planet."},
- {mesh: jupiter.mesh, name:"Jupiter", desc:"Largest planet in the solar system."},
- {mesh: saturn.mesh, name:"Saturn", desc:"Famous for its rings."},
- {mesh: uranus.mesh, name:"Uranus", desc:"Rotates on its side."},
- {mesh: neptune.mesh, name:"Neptune", desc:"Farthest known planet."}
-];
-
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-window.addEventListener('click', (event)=>{
- mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
- mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
- raycaster.setFromCamera(mouse, camera);
- const intersects = raycaster.intersectObjects(planetData.map(p=>p.mesh));
-
- if(intersects.length>0){
-  const clicked = intersects[0].object;
-  const data = planetData.find(p=>p.mesh===clicked);
-
-  if(data){
-    document.getElementById('planetName').innerText = data.name;
-    document.getElementById('planetDesc').innerText = data.desc;
-    document.getElementById('planetInfo').style.display='block';
-  }
- }
-});
-
+// MOON
 const moonPivot=new THREE.Object3D();
 earth.mesh.add(moonPivot);
 const moon=new THREE.Mesh(new THREE.SphereGeometry(0.27,32,32),new THREE.MeshStandardMaterial({color:0xaaa}));
-moon.position.x=2; moonPivot.add(moon);
+moon.position.x=2;
+moonPivot.add(moon);
 
+// RINGS
 const ring=new THREE.Mesh(new THREE.RingGeometry(3,5,64),new THREE.MeshBasicMaterial({color:0xccc,side:THREE.DoubleSide}));
-ring.rotation.x=Math.PI/2; saturn.mesh.add(ring);
+ring.rotation.x=Math.PI/2;
+saturn.mesh.add(ring);
 
+// INFO
+const data=[
+ {mesh:earth.mesh,name:"Earth",desc:"Our home planet"},
+ {mesh:mars.mesh,name:"Mars",desc:"Red planet"},
+ {mesh:jupiter.mesh,name:"Jupiter",desc:"Largest planet"}
+];
+
+const ray=new THREE.Raycaster();
+const mouse=new THREE.Vector2();
+
+window.addEventListener('click',e=>{
+ mouse.x=(e.clientX/window.innerWidth)*2-1;
+ mouse.y=-(e.clientY/window.innerHeight)*2+1;
+
+ ray.setFromCamera(mouse,camera);
+ let hit=ray.intersectObjects(data.map(d=>d.mesh));
+
+ if(hit.length){
+  let d=data.find(x=>x.mesh===hit[0].object);
+  planetName.innerText=d.name;
+  planetDesc.innerText=d.desc;
+  planetInfo.style.display='block';
+ }
+});
+
+// ANIMATE
 function animate(){
  requestAnimationFrame(animate);
+
  mercury.pivot.rotation.y+=mercury.speed;
  venus.pivot.rotation.y+=venus.speed;
  earth.pivot.rotation.y+=earth.speed;
@@ -316,21 +286,19 @@ function animate(){
  saturn.pivot.rotation.y+=saturn.speed;
  uranus.pivot.rotation.y+=uranus.speed;
  neptune.pivot.rotation.y+=neptune.speed;
+
  moonPivot.rotation.y+=0.03;
- earth.mesh.rotation.y+=0.02;
- controls.update(); renderer.render(scene,camera);
+
+ controls.update();
+ renderer.render(scene,camera);
 }
 animate();
+
 </script>
 
-<footer style="text-align:center;padding:20px;border-top:1px solid cyan;">© 2026 Science Vault</footer>
-
-
-<div id="planetInfo" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#000;padding:15px;border:1px solid cyan;border-radius:10px;display:none;max-width:300px;text-align:center;">
-<h3 id="planetName"></h3>
-<p id="planetDesc"></p>
-<button onclick="document.getElementById('planetInfo').style.display='none'">Close</button>
-</div>
+<footer style="text-align:center;padding:20px;border-top:1px solid cyan;">
+© 2026 Science Vault
+</footer>
 
 </body>
 </html>

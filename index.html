@@ -13,36 +13,62 @@
 
 <style>
 body { margin:0; font-family:'Orbitron',sans-serif; background:black; color:cyan; }
-nav { display:flex; justify-content:center; gap:20px; background:#111; padding:10px; }
-nav button {
-  background:black; color:cyan; border:1px solid cyan; padding:8px 15px; cursor:pointer; transition:0.3s;
-}
-nav button:hover { background:cyan; color:black; box-shadow:0 0 10px cyan,0 0 20px cyan; }
-.panel { border:1px solid cyan; padding:15px; margin:10px; }
-.page{display:none;} .active{display:block;}
-canvas{width:100%;}.post-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;}
-  .post-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 15px cyan;
+
+nav {
+  display:flex; justify-content:center; gap:25px;
+  background:#0a0a0a; padding:15px;
+  border-bottom:1px solid rgba(0,255,255,0.2);
 }
 
+nav button {
+  background:black; color:cyan; border:1px solid cyan;
+  padding:8px 15px; cursor:pointer; transition:0.3s;
+}
+
+nav button:hover {
+  background:cyan; color:black;
+  box-shadow:0 0 10px cyan,0 0 20px cyan;
+}
+
+.panel {
+  border:1px solid rgba(0,255,255,0.2);
+  padding:20px; margin:20px;
+  border-radius:12px;
+  background:rgba(0,0,0,0.6);
+}
+
+.page{display:none;} .active{display:block;}
+canvas{width:100%;}
+
 #posts {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 15px;
-  padding: 10px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:20px;
+  padding:20px;
 }
 
 .post-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background:#0a0a0a;
+  border:1px solid rgba(0,255,255,0.3);
+  border-radius:12px;
+  overflow:hidden;
+  transition:all 0.3s ease;
+  cursor:pointer;
 }
 
 .post-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 15px cyan;
+  transform:translateY(-5px) scale(1.03);
+  box-shadow:0 10px 25px rgba(0,255,255,0.2);
+  border-color:cyan;
 }
 
+.post-card img {
+  width:100%; height:140px; object-fit:cover;
+}
+
+.post-card h4 {
+  padding:10px; margin:0;
+}
 </style>
 </head>
 
@@ -80,10 +106,20 @@ canvas{width:100%;}.post-card {
 
 </div>
 
+<div id="postView" class="page">
+<h2 id="postTitle" style="text-align:center;"></h2>
+<div style="max-width:800px;margin:20px auto;">
+<img id="postImage" style="width:100%;display:none;">
+<p id="postContent" style="margin-top:15px;line-height:1.6;"></p>
+</div>
+<button onclick="showPage('home')" style="display:block;margin:20px auto;">⬅ Back</button>
+</div>
+
 <div id="about" class="page">
 <h2 style="text-align:center;">🌌 About Me</h2>
 <p style="text-align:center; max-width:600px; margin:auto;">
-HI!!! I’m Nikisha Pai, passionate about science, technology, and creativity. I enjoy exploring space, building simulations, and turning ideas into interactive experiences.
+HI!!! I’m Nikisha Pai, passionate about science, technology, and creativity.
+I enjoy exploring space, building simulations, and turning ideas into interactive experiences.
 <br><br>🚀 Always learning. Always building.
 </p>
 </div>
@@ -94,13 +130,11 @@ HI!!! I’m Nikisha Pai, passionate about science, technology, and creativity. I
 </audio>
 
 <script>
-// NAV
 function showPage(page){
  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
  document.getElementById(page).classList.add('active');
 }
 
-// ADMIN
 function login(){
  const input=document.getElementById("pw").value;
  if(input==="Redsaucepasta@67"){
@@ -116,65 +150,47 @@ function addPost(){
  if(!t||!c){alert('Fill all fields');return;}
 
  const post=document.createElement('div');
- post.style.border='1px solid cyan';
- post.style.padding='10px';
- post.style.margin='10px';
- post.style.cursor='pointer';
- post.style.width='200px';
- post.style.display='block';
  post.classList.add('post-card');
- post.classList.add('post-card');
- post.style.verticalAlign='top';
 
  let imageData='';
 
  function openFull(){
-  const newWin=window.open('','_blank');
-  newWin.document.write(`
-    <html>
-    <head><title>${t}</title></head>
-    <body style="background:black;color:white;font-family:Arial;padding:20px;">
-    <h1>${t}</h1>
-    ${imageData ? `<img src="${imageData}" style="max-width:100%">` : ''}
-    <p>${c}</p>
-    </body>
-    </html>
-  `);
+  document.getElementById('postTitle').innerText=t;
+  document.getElementById('postContent').innerText=c;
+
+  if(imageData){
+    const im=document.getElementById('postImage');
+    im.src=imageData;
+    im.style.display='block';
+  } else {
+    document.getElementById('postImage').style.display='none';
+  }
+
+  showPage('postView');
  }
 
  if(img){
   const r=new FileReader();
   r.onload=e=>{
     imageData=e.target.result;
-    post.innerHTML=`<img src="${imageData}" style="width:100%;height:120px;object-fit:cover"><h4>${t}</h4>`;
+    post.innerHTML=`<img src="${imageData}"><h4>${t}</h4>`;
     post.onclick=openFull;
   };
   r.readAsDataURL(img);
  } else {
-  post.innerHTML=`<div style="height:120px;background:#111"></div><h4>${t}</h4>`;
+  post.innerHTML=`<div style="height:140px;background:#111"></div><h4>${t}</h4>`;
   post.onclick=openFull;
  }
 
  document.getElementById('posts').prepend(post);
 }
- const div=document.createElement('div');
- if(img){
-  const r=new FileReader();
-  r.onload=e=>{div.innerHTML=`<h3>${t}</h3><img src="${e.target.result}" style="max-width:100%"><p>${c}</p>`};
-  r.readAsDataURL(img);
- } else div.innerHTML=`<h3>${t}</h3><p>${c}</p>`;
- document.getElementById('posts').prepend(div);
-}
 
-
-// MUSIC
 let playing=false;
 function toggleMusic(){
  const m=document.getElementById("bgMusic");
  if(!playing){m.play();playing=true;} else {m.pause();playing=false;}
 }
 
-// SOLAR SYSTEM
 const scene=new THREE.Scene();
 const renderer=new THREE.WebGLRenderer({canvas:document.getElementById("sim"),antialias:true});
 renderer.setSize(window.innerWidth,400);
@@ -185,14 +201,12 @@ const controls=new THREE.OrbitControls(camera,renderer.domElement);
 scene.add(new THREE.PointLight(0xffffff,2));
 scene.add(new THREE.AmbientLight(0x222222));
 
-// stars
 const stars=new THREE.BufferGeometry();
 let verts=[];
-for(let i=0;i<4000;i++){verts.push((Math.random()-0.5)*2000,(Math.random()-0.5)*2000,(Math.random()-0.5)*2000);}
+for(let i=0;i<4000;i++){verts.push((Math.random()-0.5)*2000,(Math.random()-0.5)*2000,(Math.random()-0.5)*2000);} 
 stars.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));
 scene.add(new THREE.Points(stars,new THREE.PointsMaterial({color:0xffffff})));
 
-// sun
 const sun=new THREE.Mesh(new THREE.SphereGeometry(5,64,64),new THREE.MeshBasicMaterial({color:0xffcc00}));
 scene.add(sun);
 
@@ -212,13 +226,11 @@ const saturn=planet(2.2,0xffddaa,28,0.005);
 const uranus=planet(1.5,0x66ffff,34,0.003);
 const neptune=planet(1.5,0x3366ff,40,0.002);
 
-// moon
 const moonPivot=new THREE.Object3D();
 earth.mesh.add(moonPivot);
 const moon=new THREE.Mesh(new THREE.SphereGeometry(0.27,32,32),new THREE.MeshStandardMaterial({color:0xaaa}));
 moon.position.x=2; moonPivot.add(moon);
 
-// rings
 const ring=new THREE.Mesh(new THREE.RingGeometry(3,5,64),new THREE.MeshBasicMaterial({color:0xccc,side:THREE.DoubleSide}));
 ring.rotation.x=Math.PI/2; saturn.mesh.add(ring);
 

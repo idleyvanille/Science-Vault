@@ -194,12 +194,17 @@ function toggleMusic(){
 const scene=new THREE.Scene();
 const renderer=new THREE.WebGLRenderer({canvas:document.getElementById("sim"),antialias:true});
 renderer.setSize(window.innerWidth,400);
+renderer.outputEncoding = THREE.sRGBEncoding;
 const camera=new THREE.PerspectiveCamera(75,window.innerWidth/400,0.1,2000);
 camera.position.set(0,20,60);
 const controls=new THREE.OrbitControls(camera,renderer.domElement);
 
-scene.add(new THREE.PointLight(0xffffff,2));
-scene.add(new THREE.AmbientLight(0x222222));
+// BETTER LIGHTING ☀️
+const light = new THREE.PointLight(0xffffff, 3, 2000);
+light.position.set(0,0,0);
+scene.add(light);
+
+scene.add(new THREE.AmbientLight(0x555555));
 
 // TEXTURE LOADER
 const loader = new THREE.TextureLoader();
@@ -220,20 +225,12 @@ scene.add(sun);
 
 function planet(size, texture, dist, speed){
  const material = texture
-   ? new THREE.MeshStandardMaterial({ map: loader.load(texture) })
+   ? new THREE.MeshStandardMaterial({
+       map: loader.load(texture),
+       roughness: 1,
+       metalness: 0
+     })
    : new THREE.MeshStandardMaterial({ color: 0xffffff });
-
- const mesh = new THREE.Mesh(
-   new THREE.SphereGeometry(size, 32, 32),
-   material
- );
-
- const pivot = new THREE.Object3D();
- scene.add(pivot);
- pivot.add(mesh);
- mesh.position.x = dist;
-
- return { pivot, speed, mesh };
 }
 
 const mercury = planet(0.5, null, 8, 0.02);

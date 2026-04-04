@@ -208,6 +208,7 @@ scene.add(new THREE.AmbientLight(0x555555));
 
 // TEXTURE LOADER
 const loader = new THREE.TextureLoader();
+loader.crossOrigin = "";
 
 // stars
 const stars=new THREE.BufferGeometry();
@@ -219,7 +220,7 @@ scene.add(new THREE.Points(stars,new THREE.PointsMaterial({color:0xffffff})));
 // sun (textured)
 const sun=new THREE.Mesh(
  new THREE.SphereGeometry(5,64,64),
- new THREE.MeshBasicMaterial({ map: loader.load("https://threejs.org/examples/textures/planets/sun.jpg") })
+ new THREE.MeshBasicMaterial({ map: loader.load("https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/sun.jpg") })
 );
 scene.add(sun);
 
@@ -236,31 +237,31 @@ function planet(size, texture, dist, speed){
 const mercury = planet(0.5, null, 8, 0.02);
 
 const venus = planet(0.9,
- "https://threejs.org/examples/textures/planets/venus.jpg",
+ "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/venus.jpg",
  11, 0.015);
 
 const earth = planet(1,
- "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
+ "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg",
  14, 0.01);
 
 const mars = planet(0.8,
- "https://threejs.org/examples/textures/planets/mars_1k_color.jpg",
+ "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/mars_1k_color.jpg",
  17, 0.008);
 
 const jupiter = planet(2.5,
- "https://threejs.org/examples/textures/planets/jupiter.jpg",
+ "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/jupiter.jpg",
  22, 0.006);
 
 const saturn = planet(2.2,
- "https://threejs.org/examples/textures/planets/saturn.jpg",
+ "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/saturn.jpg",
  28, 0.005);
 
 const uranus = planet(1.5,
- "https://threejs.org/examples/textures/planets/uranus.jpg",
+ "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/uranus.jpg",
  34, 0.003);
 
 const neptune = planet(1.5,
- "https://threejs.org/examples/textures/planets/neptune.jpg",
+ "https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/neptune.jpg",
  40, 0.002);
 
 // PLANET DATA
